@@ -376,3 +376,41 @@ as $$
   return first || '.' || second;
 $$
 ```
+
+
+
+### Materialization: Task
+
+The `task` materialization creates and optionally resumes a TASK
+in your Snowflake instance.
+
+```sql
+-- models/send_alerts_daily.sql
+{{
+    config(
+      materialized = 'task',
+      running = true
+    )
+}}
+allow_overlapping_execution = false
+warehouse = {{ var('warehouse') }}
+schedule  = 'using cron 15 11 * * * UTC'
+
+as
+  call {{ ref('send_alerts') }}()
+```
+
+This type of model pairs well with a `procedure` materialized
+model, and the `ref(...)` trick for calling it.
+
+#### Configuration Parameters
+
+The following can / should be set via the `config()` call:
+
+  - **materialized** (required) - set to `'task'`.
+
+  - **running** - a boolean that determines if the task should
+    be resumed after it is created.  Defaults to false (the task
+    will remain in the SUSPENDED state).
+
+
